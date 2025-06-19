@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - "${PROJECT_PORT:-8000}:80"  # Host:Container — WordPress UI
+    volumes:
+      - ./wordpress:/var/www/html
+      - ./php-config/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+    depends_on:
+      - db
+      - mailhog
+
+  db:
+    image: mysql:8.0
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: ${WORDPRESS_DB_NAME}
+      MYSQL_USER: ${WORDPRESS_DB_USER}
+      MYSQL_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+      - ./mysql-config:/etc/mysql/conf.d
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - "${PMA_PORT:-8080}:80"  # phpMyAdmin access on localhost
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    depends_on:
+      - db
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "${MAILHOG_HTTP_PORT:-8025}:8025"  # MailHog web UI
+      - "${MAILHOG_SMTP_PORT:-1025}:1025"  # MailHog SMTP (for WP emails)

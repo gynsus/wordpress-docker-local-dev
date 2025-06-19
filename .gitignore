@@ -1,0 +1,13 @@
+# Ignore WordPress core files and user uploads
+wordpress/
+
+# Ignore MySQL data volume
+mysql-data/
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore PHPStorm / VSCode project configs
+.idea/
+.vscode/
